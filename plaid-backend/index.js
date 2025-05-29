@@ -47,5 +47,22 @@ app.post('/api/get_accounts', async (req, res) => {
   }
 });
 
+app.post('/api/get_transactions', async (req, res) => {
+  const { uid, start_date, end_date } = req.body;
+  const access_token = userAccessTokens[uid];
+  if (!access_token) return res.status(400).json({ error: 'No access token for user' });
+  try {
+    const response = await plaidClient.transactionsGet({
+      access_token,
+      start_date: start_date || '2023-01-01',
+      end_date: end_date || new Date().toISOString().slice(0, 10),
+      options: { count: 100, offset: 0 }
+    });
+    res.json(response.data.transactions);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Plaid backend running on port ${PORT}`)); 
