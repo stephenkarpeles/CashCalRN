@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { TamaguiProvider } from 'tamagui';
 import config from './tamagui.config';
@@ -13,6 +13,13 @@ import CalendarScreen from './screens/CalendarScreen';
 import CashflowScreen from './screens/CashflowScreen';
 import TransactionsScreen from './screens/TransactionsScreen';
 import { Ionicons } from '@expo/vector-icons';
+import firebase from '@react-native-firebase/app';
+import firebaseConfig from './firebaseConfig';
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
