@@ -1,12 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { TamaguiProvider, Button } from 'tamagui'
+import config from './tamagui.config'
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+    <TamaguiProvider config={config}>
+      <Button>Hello Tamagui</Button>
       <StatusBar style="auto" />
-    </View>
+    </TamaguiProvider>
   );
 }
 
