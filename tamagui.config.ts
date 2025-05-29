@@ -1,7 +1,7 @@
 import { createTamagui } from '@tamagui/core'
 import { createInterFont } from '@tamagui/font-inter'
 // Use require to import themes
-const themes = require('@tamagui/theme-base')
+const themes = require('@tamagui/themes')
 
 const interFont = createInterFont()
 
