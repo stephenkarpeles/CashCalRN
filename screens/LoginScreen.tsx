@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
-import { Button } from 'tamagui';
+import { YStack, Text, Input, Button, XStack } from 'tamagui';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import { auth } from '../src/config/firebaseConfig';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -24,41 +23,49 @@ export default function LoginScreen({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <TextInput
-        style={styles.input}
+    <YStack flex={1} padding="$4" space="$4" alignItems="center" justifyContent="center">
+      <Text fontSize="$8" fontWeight="bold">Login</Text>
+      
+      <Input
         placeholder="Email"
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        width="100%"
+        maxWidth={320}
       />
-      <TextInput
-        style={styles.input}
+      
+      <Input
         placeholder="Password"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
+        width="100%"
+        maxWidth={320}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button onPress={handleLogin} disabled={loading}>
+      
+      {error ? <Text color="$red10">{error}</Text> : null}
+      
+      <Button
+        onPress={handleLogin}
+        disabled={loading}
+        theme="blue"
+        width="100%"
+        maxWidth={320}
+      >
         {loading ? 'Logging in...' : 'Login'}
       </Button>
+      
       <Button
         onPress={() => navigation.navigate('Signup')}
+        theme="gray"
         variant="outlined"
-        style={{ marginTop: 16 }}
+        width="100%"
+        maxWidth={320}
       >
         Sign Up
       </Button>
-    </View>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
-  title: { fontSize: 24, marginBottom: 24 },
-  input: { width: '100%', maxWidth: 320, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 12 },
-  error: { color: 'red', marginBottom: 12 },
-});

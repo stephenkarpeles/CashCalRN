@@ -13,8 +13,9 @@ import CalendarScreen from './screens/CalendarScreen';
 import CashflowScreen from './screens/CashflowScreen';
 import TransactionsScreen from './screens/TransactionsScreen';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from './firebaseConfig';
+import { auth } from './src/config/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import HomeScreen from './src/screens/HomeScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -47,19 +48,19 @@ function MainTabs() {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authInitializing, setAuthInitializing] = useState(true);
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsLoggedIn(!!user);
-      setAuthInitializing(false);
+      setIsAuthInitialized(true);
     });
 
     return () => unsubscribe();
   }, []);
 
-  if (authInitializing) {
-    return null; // Or a loading spinner
+  if (!isAuthInitialized) {
+    return null; // Or a loading screen
   }
 
   return (
@@ -73,7 +74,7 @@ export default function App() {
               <Stack.Screen name="Signup" component={SignupScreen} />
             </>
           ) : (
-            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen name="Home" component={HomeScreen} />
           )}
         </Stack.Navigator>
       </NavigationContainer>
