@@ -31,7 +31,8 @@ app.post('/api/exchange_public_token', async (req, res) => {
     userAccessTokens[uid] = response.data.access_token;
     res.json({ access_token: response.data.access_token });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Plaid error:', error?.response?.data || error?.data || error);
+    res.status(500).json({ error: error?.response?.data || error?.data || error.message || 'Unknown error' });
   }
 });
 

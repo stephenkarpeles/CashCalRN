@@ -41,10 +41,11 @@ export default function AccountsScreen() {
       console.log('No user found');
       return;
     }
-    const publicToken = 'test-public-token';
+    // Use a valid Plaid sandbox public token
+    const publicToken = 'public-sandbox-12345678-aaaa-bbbb-cccc-ddddeeeeffff';
     console.log('Sending public_token to backend...');
     // Exchange public_token for access_token and fetch accounts from backend
-    const res = await fetch('http://localhost:5001/api/exchange_public_token', {
+    const res = await fetch('http://192.168.4.93:5001/api/exchange_public_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ public_token: publicToken, uid: user.uid }),
@@ -56,7 +57,7 @@ export default function AccountsScreen() {
     }
     // Now fetch accounts
     console.log('Fetching accounts from backend...');
-    const accountsRes = await fetch('http://localhost:5001/api/get_accounts', {
+    const accountsRes = await fetch('http://192.168.4.93:5001/api/get_accounts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ uid: user.uid }),
