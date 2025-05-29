@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { auth } from './src/config/firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import HomeScreen from './src/screens/HomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -31,6 +32,7 @@ function MainTabs() {
           else if (route.name === 'Calendar') iconName = 'calendar-outline';
           else if (route.name === 'Cashflow') iconName = 'trending-up-outline';
           else if (route.name === 'Transactions') iconName = 'list-outline';
+          else if (route.name === 'Settings') iconName = 'settings-outline';
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#007AFF',
@@ -42,6 +44,7 @@ function MainTabs() {
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Cashflow" component={CashflowScreen} />
       <Tab.Screen name="Transactions" component={TransactionsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
