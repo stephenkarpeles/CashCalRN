@@ -50,11 +50,12 @@ export default function App() {
   const [authInitializing, setAuthInitializing] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsLoggedIn(!!user);
       setAuthInitializing(false);
     });
-    return unsubscribe;
+
+    return () => unsubscribe();
   }, []);
 
   if (authInitializing) {
