@@ -13,13 +13,8 @@ import CalendarScreen from './screens/CalendarScreen';
 import CashflowScreen from './screens/CashflowScreen';
 import TransactionsScreen from './screens/TransactionsScreen';
 import { Ionicons } from '@expo/vector-icons';
-import firebase from '@react-native-firebase/app';
-import firebaseConfig from './firebaseConfig';
-
-// Initialize Firebase
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+import { auth } from './firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -51,8 +46,20 @@ function MainTabs() {
 }
 
 export default function App() {
-  // Placeholder for auth state
-  const [isLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authInitializing, setAuthInitializing] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      setIsLoggedIn(!!user);
+      setAuthInitializing(false);
+    });
+    return unsubscribe;
+  }, []);
+
+  if (authInitializing) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <TamaguiProvider config={config}>
