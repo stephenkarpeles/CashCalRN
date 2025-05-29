@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { YStack, Text, Input, Button, XStack } from 'tamagui';
+import { YStack, Text, Input, Button, XStack, Spacer } from 'tamagui';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../src/config/firebaseConfig';
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -36,16 +38,31 @@ export default function LoginScreen({ navigation }: any) {
         maxWidth={320}
       />
       
-      <Input
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        width="100%"
-        maxWidth={320}
-      />
+      <XStack width="100%" maxWidth={320} alignItems="center" position="relative">
+        <Input
+          flex={1}
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Button
+          chromeless
+          onPress={() => setShowPassword((v) => !v)}
+          size="$2"
+          circular
+          position="absolute"
+          right={8}
+          zIndex={1}
+          tabIndex={-1}
+        >
+          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+        </Button>
+      </XStack>
       
       {error ? <Text color="$red10">{error}</Text> : null}
+      
+      <Spacer size="$4" />
       
       <Button
         onPress={handleLogin}

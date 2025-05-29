@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { YStack, Text, Input, Button } from 'tamagui';
+import { YStack, Text, Input, Button, XStack, Spacer } from 'tamagui';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import { auth } from '../src/config/firebaseConfig';
@@ -8,6 +9,8 @@ export default function SignupScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -48,25 +51,53 @@ export default function SignupScreen({ navigation }: any) {
         maxWidth={320}
       />
       
-      <Input
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        width="100%"
-        maxWidth={320}
-      />
+      <XStack width="100%" maxWidth={320} alignItems="center" position="relative">
+        <Input
+          flex={1}
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Button
+          chromeless
+          onPress={() => setShowPassword((v) => !v)}
+          size="$2"
+          circular
+          position="absolute"
+          right={8}
+          zIndex={1}
+          tabIndex={-1}
+        >
+          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+        </Button>
+      </XStack>
       
-      <Input
-        placeholder="Confirm Password"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        width="100%"
-        maxWidth={320}
-      />
+      <XStack width="100%" maxWidth={320} alignItems="center" position="relative">
+        <Input
+          flex={1}
+          placeholder="Confirm Password"
+          secureTextEntry={!showConfirmPassword}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
+        <Button
+          chromeless
+          onPress={() => setShowConfirmPassword((v) => !v)}
+          size="$2"
+          circular
+          position="absolute"
+          right={8}
+          zIndex={1}
+          tabIndex={-1}
+        >
+          {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+        </Button>
+      </XStack>
       
       {error ? <Text color="$red10">{error}</Text> : null}
+      
+      <Spacer size="$4" />
       
       <Button
         onPress={handleSignup}

@@ -18,6 +18,7 @@
     "@tamagui/config": "^1.126.13",
     "@tamagui/core": "^1.126.13",
     "@tamagui/font-inter": "^1.126.13",
+    "@tamagui/lucide-icons": "^1.126.13",
     "@tamagui/themes": "^1.126.13",
     "expo": "~53.0.9",
     "expo-status-bar": "~2.2.3",
