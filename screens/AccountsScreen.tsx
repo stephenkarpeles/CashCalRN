@@ -3,6 +3,7 @@ import { YStack, Text, Button, XStack, Dialog, Checkbox, Label, ScrollView, Card
 import { Plus } from '@tamagui/lucide-icons';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { create, open } from 'react-native-plaid-link-sdk';
 
 // Plaid account type (partial, for demo)
 type PlaidAccount = {
@@ -34,40 +35,53 @@ export default function AccountsScreen() {
     return () => unsub();
   }, [user, db]);
 
-  // Mock Plaid flow for testing
-  const handleMockPlaid = async () => {
+  // Real Plaid Link flow
+  const handlePlaidLink = async () => {
     setShowDialog(false);
     if (!user) {
       console.log('No user found');
       return;
     }
-    // Use a valid Plaid sandbox public token
-    const publicToken = 'public-sandbox-12345678-aaaa-bbbb-cccc-ddddeeeeffff';
-    console.log('Sending public_token to backend...');
-    // Exchange public_token for access_token and fetch accounts from backend
-    const res = await fetch('http://192.168.4.93:5001/api/exchange_public_token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ public_token: publicToken, uid: user.uid }),
-    });
-    console.log('exchange_public_token response:', res.status);
-    if (!res.ok) {
-      console.log('exchange_public_token failed');
-      return;
-    }
-    // Now fetch accounts
-    console.log('Fetching accounts from backend...');
-    const accountsRes = await fetch('http://192.168.4.93:5001/api/get_accounts', {
+    // 1. Get link_token from backend
+    const res = await fetch('http://192.168.4.93:5001/api/create_link_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ uid: user.uid }),
     });
-    console.log('get_accounts response:', accountsRes.status);
-    const accounts: PlaidAccount[] = await accountsRes.json();
-    console.log('Accounts received:', accounts);
-    setAccountsToSelect(accounts);
-    setSelectedAccounts(accounts.reduce((acc: Record<string, boolean>, a: PlaidAccount) => ({ ...acc, [a.account_id]: false }), {}));
-    setShowSelectModal(true);
+    const { link_token } = await res.json();
+    if (!link_token) {
+      console.log('No link_token received');
+      return;
+    }
+    // 2. Create and open Plaid Link
+    create({ token: link_token });
+    open({
+      onSuccess: async ({ publicToken }: { publicToken: string }) => {
+        // Exchange public_token for access_token and fetch accounts from backend
+        const res = await fetch('http://192.168.4.93:5001/api/exchange_public_token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ public_token: publicToken, uid: user.uid }),
+        });
+        if (!res.ok) {
+          console.log('exchange_public_token failed');
+          return;
+        }
+        // Now fetch accounts
+        const accountsRes = await fetch('http://192.168.4.93:5001/api/get_accounts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uid: user.uid }),
+        });
+        const accounts: PlaidAccount[] = await accountsRes.json();
+        setAccountsToSelect(accounts);
+        setSelectedAccounts(accounts.reduce((acc: Record<string, boolean>, a: PlaidAccount) => ({ ...acc, [a.account_id]: false }), {}));
+        setShowSelectModal(true);
+      },
+      onExit: (exit) => {
+        // Handle exit if needed
+      },
+    });
   };
 
   const handleAddSelectedAccounts = async () => {
@@ -114,9 +128,9 @@ export default function AccountsScreen() {
               <Button
                 theme="blue"
                 size="$4"
-                onPress={handleMockPlaid}
+                onPress={handlePlaidLink}
               >
-                Connect to Plaid (Mock)
+                Connect to Plaid
               </Button>
               <Dialog.Close asChild>
                 <Button theme="gray" variant="outlined">Cancel</Button>

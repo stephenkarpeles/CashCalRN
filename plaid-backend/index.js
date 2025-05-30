@@ -65,5 +65,22 @@ app.post('/api/get_transactions', async (req, res) => {
   }
 });
 
+app.post('/api/create_link_token', async (req, res) => {
+  try {
+    const response = await plaidClient.linkTokenCreate({
+      user: { client_user_id: req.body.uid || 'test-user' },
+      client_name: 'CashCal',
+      products: ['auth', 'transactions'],
+      country_codes: ['US'],
+      language: 'en',
+      redirect_uri: '', // Only needed for OAuth
+    });
+    res.json({ link_token: response.data.link_token });
+  } catch (error) {
+    console.error('Plaid create_link_token error:', error?.response?.data || error?.data || error);
+    res.status(500).json({ error: error?.response?.data || error?.data || error.message || 'Unknown error' });
+  }
+});
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => console.log(`Plaid backend running on port ${PORT}`)); 
