@@ -73,7 +73,7 @@ app.post('/api/create_link_token', async (req, res) => {
       products: ['auth', 'transactions'],
       country_codes: ['US'],
       language: 'en',
-      redirect_uri: '', // Only needed for OAuth
+      //redirect_uri: '', // Only needed for OAuth
     });
     res.json({ link_token: response.data.link_token });
   } catch (error) {

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Plaid Link</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+  </head>
+  <body>
+    <script>
+      function getQueryParam(param) {
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
+      var linkToken = getQueryParam('token');
+      var handler = Plaid.create({
+        token: linkToken,
+        onSuccess: function(public_token, metadata) {
+          window.location = 'https://success?public_token=' + public_token;
+        },
+        onExit: function(err, metadata) {
+          window.location = 'https://exit';
+        }
+      });
+      handler.open();
+    </script>
+  </body>
+</html> 

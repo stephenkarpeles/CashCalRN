@@ -3,7 +3,7 @@ import { YStack, Text, Button, XStack, Dialog, Checkbox, Label, ScrollView, Card
 import { Plus } from '@tamagui/lucide-icons';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { create, open } from 'react-native-plaid-link-sdk';
+import { Linking } from 'react-native';
 
 // Plaid account type (partial, for demo)
 type PlaidAccount = {
@@ -23,6 +23,7 @@ export default function AccountsScreen() {
   const auth = getAuth();
   const db = getFirestore();
   const user = auth.currentUser;
+  const [loadingPlaid, setLoadingPlaid] = useState(false);
 
   // Listen to Firestore for user's accounts
   useEffect(() => {
@@ -42,46 +43,26 @@ export default function AccountsScreen() {
       console.log('No user found');
       return;
     }
-    // 1. Get link_token from backend
-    const res = await fetch('http://192.168.4.93:5001/api/create_link_token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid: user.uid }),
-    });
-    const { link_token } = await res.json();
-    if (!link_token) {
-      console.log('No link_token received');
-      return;
+    setLoadingPlaid(true);
+    try {
+      const res = await fetch('http://192.168.4.93:5001/api/create_link_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: user.uid }),
+      });
+      const { link_token } = await res.json();
+      if (!link_token) {
+        console.log('No link_token received');
+        setLoadingPlaid(false);
+        return;
+      }
+      // Open Plaid Link in the browser
+      Linking.openURL(`https://cdn.plaid.com/link/v2/stable/link.html?token=${link_token}`);
+    } catch (e) {
+      console.log('Error getting Plaid link token', e);
+    } finally {
+      setLoadingPlaid(false);
     }
-    // 2. Create and open Plaid Link
-    create({ token: link_token });
-    open({
-      onSuccess: async ({ publicToken }: { publicToken: string }) => {
-        // Exchange public_token for access_token and fetch accounts from backend
-        const res = await fetch('http://192.168.4.93:5001/api/exchange_public_token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ public_token: publicToken, uid: user.uid }),
-        });
-        if (!res.ok) {
-          console.log('exchange_public_token failed');
-          return;
-        }
-        // Now fetch accounts
-        const accountsRes = await fetch('http://192.168.4.93:5001/api/get_accounts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ uid: user.uid }),
-        });
-        const accounts: PlaidAccount[] = await accountsRes.json();
-        setAccountsToSelect(accounts);
-        setSelectedAccounts(accounts.reduce((acc: Record<string, boolean>, a: PlaidAccount) => ({ ...acc, [a.account_id]: false }), {}));
-        setShowSelectModal(true);
-      },
-      onExit: (exit) => {
-        // Handle exit if needed
-      },
-    });
   };
 
   const handleAddSelectedAccounts = async () => {
@@ -113,7 +94,7 @@ export default function AccountsScreen() {
               <Text fontSize="$6" fontWeight="bold">{account.name}</Text>
               <Text color="$gray10">{account.subtype} ••••{account.mask}</Text>
               <Text fontSize="$5" color="$green10" marginTop="$2">
-                Balance: {account.balances?.current != null ? `$${account.balances.current.toFixed(2)}` : 'N/A'} {account.balances?.iso_currency_code || ''}
+                Balance: {account.balances?.current != null ? `$${account.balances.current.toFixed(2)}` : 'N/A'}
               </Text>
             </YStack>
           </Card>
@@ -129,36 +110,9 @@ export default function AccountsScreen() {
                 theme="blue"
                 size="$4"
                 onPress={handlePlaidLink}
+                disabled={loadingPlaid}
               >
-                Connect to Plaid
-              </Button>
-              <Dialog.Close asChild>
-                <Button theme="gray" variant="outlined">Cancel</Button>
-              </Dialog.Close>
-            </YStack>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
-      {/* Account selection modal */}
-      <Dialog open={showSelectModal} onOpenChange={setShowSelectModal}>
-        <Dialog.Portal>
-          <Dialog.Overlay key="overlay2" />
-          <Dialog.Content bordered elevate key="content2" width={340}>
-            <YStack space="$4" alignItems="center">
-              <Dialog.Title>Select Accounts to Add</Dialog.Title>
-              <ScrollView height={200} width={300}>
-                {accountsToSelect.map((account) => (
-                  <XStack key={account.account_id} alignItems="center" space="$2" marginBottom="$2">
-                    <Checkbox
-                      checked={selectedAccounts[account.account_id]}
-                      onCheckedChange={(checked) => setSelectedAccounts((prev) => ({ ...prev, [account.account_id]: checked as boolean }))}
-                    />
-                    <Label>{account.name} ({account.subtype}) - {account.mask}</Label>
-                  </XStack>
-                ))}
-              </ScrollView>
-              <Button theme="blue" onPress={handleAddSelectedAccounts}>
-                Add Selected Accounts
+                {loadingPlaid ? 'Loading...' : 'Connect to Plaid'}
               </Button>
               <Dialog.Close asChild>
                 <Button theme="gray" variant="outlined">Cancel</Button>
